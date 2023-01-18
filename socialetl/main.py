@@ -50,7 +50,7 @@ def extract_reddit_data(
         user_agent=os.environ['REDDIT_USER_AGENT'],
     )
     subreddit = reddit.subreddit(sub_reddit)
-    top_subreddit = subreddit.top(limit=num_records)
+    top_subreddit = subreddit.hot(limit=num_records)
     reddit_data = []
     for submission in top_subreddit:
         reddit_data.append(
@@ -100,17 +100,16 @@ def load_reddit_data(reddit_data: List[RedditPostData]) -> None:
         reddit_data (List[RedditPostData]): List of reddit post data.
     """
     # create a sqlite3 connection
-    conn = sqlite3.connect('reddit.db')
+    conn = sqlite3.connect('data/reddit.db')
     try:
-        # create a cursor
         cur = conn.cursor()
-        # create a table
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS reddit_posts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT,
                 score INTEGER,
-                id TEXT,
+                post_id TEXT,
                 url TEXT,
                 comms_num INTEGER,
                 created TEXT,
@@ -120,21 +119,24 @@ def load_reddit_data(reddit_data: List[RedditPostData]) -> None:
         )
         # insert data into the table
         for post in reddit_data:
+            # insert into table with named columns
             cur.execute(
                 """
-                INSERT INTO reddit_posts VALUES (
-                    ?, ?, ?, ?, ?, ?, ?
+                INSERT INTO reddit_posts (
+                    title, score, post_id, url, comms_num, created, body
+                ) VALUES (
+                    :title, :score, :post_id, :url, :comms_num, :created, :body
                 )
                 """,
-                (
-                    post.title,
-                    post.score,
-                    post.id,
-                    post.url,
-                    post.comms_num,
-                    post.created,
-                    post.body,
-                ),
+                {
+                    'title': post.title,
+                    'score': post.score,
+                    'post_id': post.id,
+                    'url': post.url,
+                    'comms_num': post.comms_num,
+                    'created': post.created,
+                    'body': post.body,
+                },
             )
         # commit the changes
         conn.commit()
