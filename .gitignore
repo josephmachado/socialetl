@@ -163,3 +163,5 @@ cython_debug/
 #.idea/
 
 data/reddit.db
+
+.ruff_cache*
