@@ -1,10 +1,10 @@
+import sqlite3
 from typing import List
 
 import pytest
 
-from socialetl.reddit import RedditPostData, RedditETL
+from socialetl.reddit import RedditETL, RedditPostData
 from socialetl.utils.db import DatabaseConnection
-import sqlite3
 
 
 @pytest.fixture

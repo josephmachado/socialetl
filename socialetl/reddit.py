@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
@@ -45,6 +46,7 @@ class RedditETL:
         Returns:
             List[RedditPostData]: List of reddit post data.
         """
+        logging.info('Extracting reddit data.')
         if reddit_client is None:
             raise ValueError(
                 'reddit object is None. Please pass a valid praw.Reddit object.'
@@ -81,6 +83,7 @@ class RedditETL:
         Returns:
             List[RedditPostData]: Filtered list of reddit post data.
         """
+        logging.info('Transforming reddit data.')
         num_comments = [post.comms_num for post in reddit_data]
         mean_num_comments = sum(num_comments) / len(num_comments)
         std_num_comments = (
@@ -103,7 +106,7 @@ class RedditETL:
         Args:
             reddit_data (List[RedditPostData]): List of reddit post data.
         """
-
+        logging.info('Loading reddit data.')
         if db_cursor_context is None:
             raise ValueError(
                 'db_cursor is None. Please pass a valid sqlite3.Cursor object.'
@@ -113,7 +116,7 @@ class RedditETL:
             for post in reddit_data:
                 cur.execute(
                     """
-                    INSERT INTO reddit_posts (
+                    INSERT OR REPLACE INTO reddit_posts (
                         title, score, post_id, url, comms_num, created, body
                     ) VALUES (
                         :title, :score, :post_id, :url, :comms_num, :created, :body
