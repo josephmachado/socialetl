@@ -1,12 +1,16 @@
 from utils.db import DatabaseConnection
 import os
 import praw
-from reddit import extract_reddit_data, load_reddit_data, transform_reddit_data
+from reddit import RedditETL
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def setup_db_schema():
     """Function to setup the database schema."""
     with DatabaseConnection().managed_cursor() as cur:
+        cur.execute("DROP TABLE IF EXISTS reddit_posts;")
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS reddit_posts (
@@ -33,9 +37,9 @@ if __name__ == '__main__':
     )
 
     DB_CURSOR = DatabaseConnection().managed_cursor()
-    load_reddit_data(
-        transform_reddit_data(
-            extract_reddit_data(reddit_client=REDDIT_CLIENT)
+    RedditETL.load_reddit_data(
+        RedditETL.transform_reddit_data(
+            RedditETL.extract_reddit_data(reddit_client=REDDIT_CLIENT)
         ),
-        db_cursor=DB_CURSOR,
+        db_cursor_context=DB_CURSOR,
     )

@@ -2,11 +2,7 @@ from typing import List
 
 import pytest
 
-from socialetl.reddit import (
-    RedditPostData,
-    transform_reddit_data,
-    load_reddit_data,
-)
+from socialetl.reddit import RedditPostData, RedditETL
 from socialetl.utils.db import DatabaseConnection
 import sqlite3
 
@@ -68,7 +64,7 @@ def test_transform_reddit_data(mock_reddit_data: List[RedditPostData]) -> None:
     Args:
         mock_reddit_data (List[RedditPostData]): A List of RedditPostData objects.
     """
-    transformed_data = transform_reddit_data(mock_reddit_data)
+    transformed_data = RedditETL.transform_reddit_data(mock_reddit_data)
     assert len(transformed_data) == 1
     assert transformed_data[0].comms_num == 8
 
@@ -98,7 +94,7 @@ def test_load_reddit_data(
         mock_reddit_data (List[RedditPostData]): A List of RedditPostData objects.
     """
 
-    load_reddit_data(
+    RedditETL.load_reddit_data(
         mock_reddit_data,
         DatabaseConnection(db_file=TEST_SQLITE3_DB).managed_cursor(),
     )
