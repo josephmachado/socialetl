@@ -1,5 +1,5 @@
-from contextlib import contextmanager
 import sqlite3
+from contextlib import contextmanager
 
 
 class DatabaseConnection:
