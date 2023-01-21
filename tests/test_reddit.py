@@ -1,9 +1,10 @@
-from typing import List
 import json
 from datetime import datetime
+from typing import List
+
 import pytest
 
-from socialetl.socialetl import SocialMediaData, RedditETL, RedditPostData
+from socialetl.socialetl import RedditETL, RedditPostData, SocialMediaData
 from socialetl.utils.db import DatabaseConnection
 
 

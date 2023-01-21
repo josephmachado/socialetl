@@ -23,6 +23,16 @@ def setup_db_schema():
             )
             """
         )
+        logging.info('Creating ETL metadata table.')
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS log_metadata (
+                dt_created datetime default current_timestamp,
+                function_name TEXT,
+                input_params TEXT
+            )
+            """
+        )
 
 
 def teardown_db_schema():
@@ -30,6 +40,7 @@ def teardown_db_schema():
     logging.info('Dropping social_posts table.')
     with DatabaseConnection().managed_cursor() as cur:
         cur.execute('DROP TABLE IF EXISTS social_posts')
+        cur.execute('DROP TABLE IF EXISTS log_metadata')
 
 
 def main(source: str = 'reddit') -> None:

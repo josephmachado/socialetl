@@ -1,3 +1,4 @@
+import inspect
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -91,7 +92,37 @@ class SocialETL(ABC):
         pass
 
 
+def log_metadata(func):
+    def log_wrapper(*args, **kwargs):
+
+        input_params = dict(
+            zip(list(locals().keys())[:-1], list(locals().values())[:-1])
+        )
+        param_names = list(
+            inspect.signature(func).parameters.keys()
+        )  # order is preserved
+        # match with input_params.get('args') and then input_params.get('kwargs')
+        input_dict = {}
+        for v in input_params.get('args'):
+            input_dict[param_names.pop(0)] = v
+
+        with DatabaseConnection().managed_cursor() as cur:
+            cur.execute(
+                f'INSERT INTO log_metadata (function_name, input_params) VALUES (:func_name, :input_params)',
+                {
+                    'func_name': func.__name__,
+                    'input_params': str(
+                        input_dict | input_params.get('kwargs')
+                    ),
+                },
+            )
+        return func(*args, **kwargs)
+
+    return log_wrapper
+
+
 class RedditETL(SocialETL):
+    @log_metadata
     def extract(
         self,
         id: str,
@@ -133,6 +164,7 @@ class RedditETL(SocialETL):
             )
         return reddit_data
 
+    @log_metadata
     def transform(
         self,
         social_data: List[SocialMediaData],
@@ -161,6 +193,7 @@ class RedditETL(SocialETL):
             > mean_num_comments + 2 * std_num_comments
         ]
 
+    @log_metadata
     def load(
         self,
         social_data: List[SocialMediaData],
@@ -221,6 +254,7 @@ class RedditETL(SocialETL):
 
 
 class TwitterETL(SocialETL):
+    @log_metadata
     def extract(
         self,
         id: str,
@@ -271,6 +305,7 @@ class TwitterETL(SocialETL):
         ]
         return list_of_tweets[:num_records]
 
+    @log_metadata
     def transform(
         self,
         social_data: List[SocialMediaData],
@@ -288,6 +323,7 @@ class TwitterETL(SocialETL):
         logging.info('Transforming twitter data.')
         return social_data
 
+    @log_metadata
     def load(
         self,
         social_data: List[SocialMediaData],
@@ -351,20 +387,22 @@ class ETLFactory:
     def create_etl(
         self, source: str
     ) -> Tuple[praw.Reddit | tweepy.Client, SocialETL]:
-        if source == 'reddit':
-            REDDIT_CLIENT = praw.Reddit(
-                client_id=os.environ['REDDIT_CLIENT_ID'],
-                client_secret=os.environ['REDDIT_CLIENT_SECRET'],
-                user_agent=os.environ['REDDIT_USER_AGENT'],
-            )
-
-            return REDDIT_CLIENT, RedditETL()
-        elif source == 'twitter':
-            TWITTER_CLIENT = tweepy.Client(
-                bearer_token=os.environ['BEARER_TOKEN']
-            )
-            id = 'startdataeng'
-            return TWITTER_CLIENT, TwitterETL()
+        factory = {
+            'reddit': (
+                praw.Reddit(
+                    client_id=os.environ['REDDIT_CLIENT_ID'],
+                    client_secret=os.environ['REDDIT_CLIENT_SECRET'],
+                    user_agent=os.environ['REDDIT_USER_AGENT'],
+                ),
+                RedditETL(),
+            ),
+            'twitter': (
+                tweepy.Client(bearer_token=os.environ['BEARER_TOKEN']),
+                TwitterETL(),
+            ),
+        }
+        if source in factory:
+            return factory[source]
         else:
             raise ValueError(
                 f"source {source} is not supported. Please pass a valid source."
