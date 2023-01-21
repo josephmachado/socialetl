@@ -40,13 +40,9 @@ def main(source: str = 'reddit') -> None:
     """
     logging.info(f'Starting {source} ETL')
     logging.info(f'Getting {source} ETL object from factory')
-    client, id, num_records, social_etl = ETLFactory().create_etl(source)
-    DB_CURSOR = DatabaseConnection().managed_cursor()
+    client, social_etl = ETLFactory().create_etl(source)
     social_etl.run(
-        db_cursor_context=DB_CURSOR,
-        client=client,
-        num_records=num_records,
-        id=id,
+        db_cursor_context=DatabaseConnection().managed_cursor(), client=client
     )
     logging.info(f'Finished {source} ETL')
 

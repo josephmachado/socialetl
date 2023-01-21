@@ -80,6 +80,7 @@ class SocialETL(ABC):
     ) -> None:
         pass
 
+    @abstractmethod
     def run(
         self,
         db_cursor_context: DatabaseConnection,
@@ -87,10 +88,7 @@ class SocialETL(ABC):
         id: str,
         num_records: int,
     ):
-        self.load(
-            self.transform(self.extract(id, num_records, client)),
-            db_cursor_context=db_cursor_context,
-        )
+        pass
 
 
 class RedditETL(SocialETL):
@@ -196,6 +194,31 @@ class RedditETL(SocialETL):
                     },
                 )
 
+    def run(
+        self,
+        db_cursor_context: DatabaseConnection,
+        client,
+        id: str = 'dataengineering',
+        num_records: int = 100,
+    ):
+        """Function to run the ETL pipeline.
+
+        Args:
+            db_cursor_context (DatabaseConnection): Database connection.
+            client (praw.Reddit): Reddit client.
+            id (str): Subreddit to get data from.
+            num_records (int): Number of records to get.
+        """
+        logging.info('Running reddit ETL.')
+        self.load(
+            social_data=self.transform(
+                social_data=self.extract(
+                    id=id, num_records=num_records, client=client
+                )
+            ),
+            db_cursor_context=db_cursor_context,
+        )
+
 
 class TwitterETL(SocialETL):
     def extract(
@@ -298,25 +321,50 @@ class TwitterETL(SocialETL):
                     },
                 )
 
+    def run(
+        self,
+        db_cursor_context: DatabaseConnection,
+        client,
+        id: str = 'startdataeng',
+        num_records: int = 100,
+    ):
+        """Function to run the ETL pipeline.
+
+        Args:
+            db_cursor_context (DatabaseConnection): Database connection.
+            client (tweepy.Twitter): Twitter client.
+            id (str): Subreddit to get data from.
+            num_records (int): Number of records to get.
+        """
+        logging.info('Running twitter ETL.')
+        self.load(
+            social_data=self.transform(
+                social_data=self.extract(
+                    id=id, num_records=num_records, client=client
+                )
+            ),
+            db_cursor_context=db_cursor_context,
+        )
+
 
 class ETLFactory:
     def create_etl(
         self, source: str
-    ) -> Tuple[praw.Reddit | tweepy.Client, str, int, SocialETL]:
+    ) -> Tuple[praw.Reddit | tweepy.Client, SocialETL]:
         if source == 'reddit':
             REDDIT_CLIENT = praw.Reddit(
                 client_id=os.environ['REDDIT_CLIENT_ID'],
                 client_secret=os.environ['REDDIT_CLIENT_SECRET'],
                 user_agent=os.environ['REDDIT_USER_AGENT'],
             )
-            id = 'dataengineering'
-            return REDDIT_CLIENT, id, 100, RedditETL()
+
+            return REDDIT_CLIENT, RedditETL()
         elif source == 'twitter':
             TWITTER_CLIENT = tweepy.Client(
                 bearer_token=os.environ['BEARER_TOKEN']
             )
             id = 'startdataeng'
-            return TWITTER_CLIENT, id, 100, TwitterETL()
+            return TWITTER_CLIENT, TwitterETL()
         else:
             raise ValueError(
                 f"source {source} is not supported. Please pass a valid source."
