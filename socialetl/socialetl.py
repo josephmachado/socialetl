@@ -22,14 +22,14 @@ class RedditPostData:
         score (int): Score of the reddit post.
         url (str): URL of the reddit post.
         comms_num (int): Number of comments on the reddit post.
-        created (datetime): Datetime of when the reddit post was created.
+        created (str): Datetime (string repr) of when the reddit post was created.
     """
 
     title: str
     score: int
     url: str
     comms_num: int
-    created: datetime
+    created: str
     text: str
 
 
@@ -126,7 +126,7 @@ class RedditETL(SocialETL):
                         score=submission.score,
                         url=submission.url,
                         comms_num=submission.num_comments,
-                        created=datetime.fromtimestamp(submission.created),
+                        created=str(submission.created),
                         text=submission.selftext,
                     ),
                 )

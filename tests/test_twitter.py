@@ -17,7 +17,7 @@ class TestTwitterETL:
 
         Returns:
             List[SocialMediaData]: List of SocialMediaData objects that
-            replcate what we get from the extract method.
+            replicate what we get from the extract method.
         """
         # Create 5 SocialMediaData objects with the same id, source, social_data
         # where social_data is a TwitterTweetData object
@@ -33,35 +33,6 @@ class TestTwitterETL:
                 )
             )
         return list_of_twitter_data
-
-    @pytest.fixture
-    def mock_social_posts_table(self) -> None:
-        # Setup schema
-        with DatabaseConnection(
-            db_file="data/test.db"
-        ).managed_cursor() as cur:
-            # setup schema
-            cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS social_posts (
-                    id TEXT PRIMARY KEY,
-                    source TEXT,
-                    social_data TEXT,
-                    dt_created datetime default current_timestamp
-                )
-                """
-            )
-        yield
-        # teardown schema
-        with DatabaseConnection(
-            db_file="data/test.db"
-        ).managed_cursor() as cur:
-            # setup schema
-            cur.execute(
-                """
-                DROP TABLE IF EXISTS social_posts
-                """
-            )
 
     def test_transform(self, mock_twitter_data: List[SocialMediaData]) -> None:
         """Function to test the transform method of the TwitterETL class.
@@ -97,9 +68,7 @@ class TestTwitterETL:
             == mock_twitter_data[0].social_data.text
         )
 
-    def test_load(
-        self, mock_twitter_data: List[SocialMediaData], mock_social_posts_table
-    ) -> None:
+    def test_load(self, mock_twitter_data: List[SocialMediaData]) -> None:
         """Function to test the load method of the TwitterETL class.
 
         Args:
@@ -124,7 +93,7 @@ class TestTwitterETL:
         with DatabaseConnection(
             db_file="data/test.db"
         ).managed_cursor() as cur:
-            cur.execute("SELECT * FROM social_posts")
+            cur.execute("SELECT * FROM social_posts WHERE source = 'twitter'")
             rows = cur.fetchall()
         # Assert that the length of the rows is the same as the length of the mock
         assert len(rows) == len(mock_twitter_data)
