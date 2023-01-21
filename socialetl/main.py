@@ -5,9 +5,9 @@ import os
 import praw
 import tweepy
 from dotenv import load_dotenv
-from reddit import RedditETL
-from twitter import TwitterETL
 from utils.db import DatabaseConnection
+
+from socialetl import RedditETL, TwitterETL, ETLFactory
 
 load_dotenv()
 
@@ -15,6 +15,16 @@ load_dotenv()
 def setup_db_schema():
     """Function to setup the database schema."""
     with DatabaseConnection().managed_cursor() as cur:
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS social_posts (
+                id TEXT PRIMARY KEY,
+                source TEXT,
+                social_data TEXT,
+                dt_created datetime default current_timestamp
+            )
+            """
+        )
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS reddit_posts (
@@ -41,8 +51,28 @@ def setup_db_schema():
 def teardown_db_schema():
     """Function to teardown the database schema."""
     with DatabaseConnection().managed_cursor() as cur:
+        cur.execute('DROP TABLE IF EXISTS social_posts')
         cur.execute('DROP TABLE IF EXISTS reddit_posts')
         cur.execute('DROP TABLE IF EXISTS twitter_posts')
+
+
+def main(source: str = 'reddit') -> None:
+    """Function to call the ETL code
+
+    Args:
+        source (str, optional): Defines which ata to pull. Defaults to 'reddit'.
+    """
+    logging.info(f'Starting {source} ETL')
+    logging.info(f'Getting {source} ETL object from factory')
+    client, id, num_records, social_etl = ETLFactory().create_etl(source)
+    DB_CURSOR = DatabaseConnection().managed_cursor()
+    social_etl.run(
+        db_cursor_context=DB_CURSOR,
+        client=client,
+        num_records=num_records,
+        id=id,
+    )
+    logging.info(f'Finished {source} ETL')
 
 
 if __name__ == '__main__':
@@ -64,28 +94,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel.upper())
     setup_db_schema()
-
-    if args.etl == 'reddit':
-        logging.info('Starting reddit ETL')
-        REDDIT_CLIENT = praw.Reddit(
-            client_id=os.environ['REDDIT_CLIENT_ID'],
-            client_secret=os.environ['REDDIT_CLIENT_SECRET'],
-            user_agent=os.environ['REDDIT_USER_AGENT'],
-        )
-
-        DB_CURSOR = DatabaseConnection().managed_cursor()
-
-        RedditETL.load_reddit_data(
-            RedditETL.transform_reddit_data(
-                RedditETL.extract_reddit_data(reddit_client=REDDIT_CLIENT)
-            ),
-            db_cursor_context=DB_CURSOR,
-        )
-    elif args.etl == 'twitter':
-        logging.info('Starting twitter ETL')
-        twitter_client = tweepy.Client(bearer_token=os.environ['BEARER_TOKEN'])
-        twitter_data = TwitterETL.extract_twitter_data(
-            twitter_client=twitter_client
-        )
-        DB_CURSOR = DatabaseConnection().managed_cursor()
-        TwitterETL.load_twitter_data(twitter_data, db_cursor_context=DB_CURSOR)
+    main(source=args.etl)
