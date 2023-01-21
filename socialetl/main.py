@@ -1,13 +1,10 @@
 import argparse
 import logging
-import os
 
-import praw
-import tweepy
 from dotenv import load_dotenv
 from utils.db import DatabaseConnection
 
-from socialetl import RedditETL, TwitterETL, ETLFactory
+from socialetl import ETLFactory
 
 load_dotenv()
 
@@ -15,6 +12,7 @@ load_dotenv()
 def setup_db_schema():
     """Function to setup the database schema."""
     with DatabaseConnection().managed_cursor() as cur:
+        logging.info('Creating social_posts table.')
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS social_posts (
@@ -25,35 +23,13 @@ def setup_db_schema():
             )
             """
         )
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS reddit_posts (
-                title TEXT,
-                score INTEGER,
-                post_id TEXT PRIMARY KEY,
-                url TEXT,
-                comms_num INTEGER,
-                created TEXT,
-                body TEXT
-            )
-            """
-        )
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS twitter_posts (
-                id INTEGER PRIMARY KEY,
-                text TEXT
-            )
-            """
-        )
 
 
 def teardown_db_schema():
     """Function to teardown the database schema."""
+    logging.info('Dropping social_posts table.')
     with DatabaseConnection().managed_cursor() as cur:
         cur.execute('DROP TABLE IF EXISTS social_posts')
-        cur.execute('DROP TABLE IF EXISTS reddit_posts')
-        cur.execute('DROP TABLE IF EXISTS twitter_posts')
 
 
 def main(source: str = 'reddit') -> None:
@@ -90,8 +66,15 @@ if __name__ == '__main__':
         default='warning',
         help='Provide logging level. Example --loglevel debug, default=warning',
     )
+    parser.add_argument(
+        '--reset-db',
+        action='store_true',
+        help='Reset your database objects',
+    )
 
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel.upper())
-    setup_db_schema()
+    if args.reset_db:
+        teardown_db_schema()
+        setup_db_schema()
     main(source=args.etl)
