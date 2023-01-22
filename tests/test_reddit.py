@@ -4,7 +4,12 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import RedditETL, RedditPostData, SocialMediaData
+from socialetl.socialetl import (
+    RedditPostData,
+    SocialMediaData,
+    etl_factory,
+    transformation_factory,
+)
 from socialetl.utils.db import DatabaseConnection
 
 
@@ -50,10 +55,12 @@ class TestRedditETL:
             objects that replicate what we get from the extract method.
         """
         # Create a RedditETL object
-        reddit_etl = RedditETL()
+        _, reddit_etl = etl_factory('reddit')
         # Call the transform method on the RedditETL object
         # and pass in the mock
-        transformed_data = reddit_etl.transform(mock_reddit_data)
+        transformed_data = reddit_etl.transform(
+            mock_reddit_data, transformation_factory('sd')
+        )
         # Assert that the transformed data is a list of RedditPostData objects
         assert isinstance(transformed_data, list)
         assert transformed_data[0].social_data.comms_num == 8
@@ -67,10 +74,13 @@ class TestRedditETL:
             objects that replicate what we get from the extract method.
         """
         # Create a RedditETL object
-        reddit_etl = RedditETL()
+        # Create a RedditETL object
+        _, reddit_etl = etl_factory('reddit')
         # Call the transform method on the RedditETL object
         # and pass in the mock
-        transformed_data = reddit_etl.transform(mock_reddit_data)
+        transformed_data = reddit_etl.transform(
+            mock_reddit_data, transformation_factory('no_tx')
+        )
         # Call the load method on the RedditETL object
         # and pass in the transformed data
         db_cursor_context = DatabaseConnection(

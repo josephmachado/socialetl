@@ -456,27 +456,24 @@ class TwitterETL(SocialETL):
         )
 
 
-class ETLFactory:
-    def create_etl(
-        self, source: str
-    ) -> Tuple[praw.Reddit | tweepy.Client, SocialETL]:
-        factory = {
-            'reddit': (
-                praw.Reddit(
-                    client_id=os.environ['REDDIT_CLIENT_ID'],
-                    client_secret=os.environ['REDDIT_CLIENT_SECRET'],
-                    user_agent=os.environ['REDDIT_USER_AGENT'],
-                ),
-                RedditETL(),
+def etl_factory(source: str) -> Tuple[praw.Reddit | tweepy.Client, SocialETL]:
+    factory = {
+        'reddit': (
+            praw.Reddit(
+                client_id=os.environ['REDDIT_CLIENT_ID'],
+                client_secret=os.environ['REDDIT_CLIENT_SECRET'],
+                user_agent=os.environ['REDDIT_USER_AGENT'],
             ),
-            'twitter': (
-                tweepy.Client(bearer_token=os.environ['BEARER_TOKEN']),
-                TwitterETL(),
-            ),
-        }
-        if source in factory:
-            return factory[source]
-        else:
-            raise ValueError(
-                f"source {source} is not supported. Please pass a valid source."
-            )
+            RedditETL(),
+        ),
+        'twitter': (
+            tweepy.Client(bearer_token=os.environ['BEARER_TOKEN']),
+            TwitterETL(),
+        ),
+    }
+    if source in factory:
+        return factory[source]
+    else:
+        raise ValueError(
+            f"source {source} is not supported. Please pass a valid source."
+        )
