@@ -1,10 +1,11 @@
 import inspect
 import logging
 import os
+import random
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 import praw
 import tweepy
@@ -70,6 +71,9 @@ class SocialETL(ABC):
     def transform(
         self,
         social_data: List[SocialMediaData],
+        transform_function: Callable[
+            [List[SocialMediaData]], List[SocialMediaData]
+        ],
     ) -> List[SocialMediaData]:
         pass
 
@@ -86,6 +90,9 @@ class SocialETL(ABC):
         self,
         db_cursor_context: DatabaseConnection,
         client,
+        transform_function: Callable[
+            [List[SocialMediaData]], List[SocialMediaData]
+        ],
         id: str,
         num_records: int,
     ):
@@ -119,6 +126,60 @@ def log_metadata(func):
         return func(*args, **kwargs)
 
     return log_wrapper
+
+
+def no_transformation(
+    social_data: List[SocialMediaData],
+) -> List[SocialMediaData]:
+    logging.info('No transformation applied.')
+    return social_data
+
+
+def random_choice_filter(
+    social_data: List[SocialMediaData],
+) -> List[SocialMediaData]:
+    """Function to filter social media data, by only keeping the
+    posts with number of comments greater than 2 standard deviations
+    away from the mean number of comments.
+
+    Args:
+        social_data (List[SocialMediaData]): List of social media post data.
+
+    Returns:
+        List[SocialMediaData]: Filtered list of social media post data.
+    """
+    logging.info('Randomly choosing 2 social media data points.')
+    return random.choices(social_data, k=2)
+
+
+def standard_deviation_outlier_filter(
+    social_data: List[SocialMediaData],
+) -> List[SocialMediaData]:
+    """Function to filter social media data, by only keeping the
+    posts with number of comments greater than 2 standard deviations
+    away from the mean number of comments.
+
+    Args:
+        social_data (List[SocialMediaData]): List of social media post data.
+
+    Returns:
+        List[SocialMediaData]: Filtered list of social media post data.
+    """
+    logging.info(
+        'Filtering social media data based on Standard Deviation Outlier algorithm.'
+    )
+    num_comments = [post.social_data.comms_num for post in social_data]
+    mean_num_comments = sum(num_comments) / len(num_comments)
+    std_num_comments = (
+        sum([(x - mean_num_comments) ** 2 for x in num_comments])
+        / len(num_comments)
+    ) ** 0.5
+    return [
+        post
+        for post in social_data
+        if post.social_data.comms_num
+        > mean_num_comments + 2 * std_num_comments
+    ]
 
 
 class RedditETL(SocialETL):
@@ -168,6 +229,9 @@ class RedditETL(SocialETL):
     def transform(
         self,
         social_data: List[SocialMediaData],
+        transform_function: Callable[
+            [List[SocialMediaData]], List[SocialMediaData]
+        ],
     ) -> List[SocialMediaData]:
         """Function to transform reddit data, by only keeping the
         posts with number of comments greater than 2 standard deviations
@@ -180,18 +244,7 @@ class RedditETL(SocialETL):
             List[RedditPostData]: Filtered list of reddit post data.
         """
         logging.info('Transforming reddit data.')
-        num_comments = [post.social_data.comms_num for post in social_data]
-        mean_num_comments = sum(num_comments) / len(num_comments)
-        std_num_comments = (
-            sum([(x - mean_num_comments) ** 2 for x in num_comments])
-            / len(num_comments)
-        ) ** 0.5
-        return [
-            post
-            for post in social_data
-            if post.social_data.comms_num
-            > mean_num_comments + 2 * std_num_comments
-        ]
+        return transform_function(social_data)
 
     @log_metadata
     def load(
@@ -231,6 +284,9 @@ class RedditETL(SocialETL):
         self,
         db_cursor_context: DatabaseConnection,
         client,
+        transform_function: Callable[
+            [List[SocialMediaData]], List[SocialMediaData]
+        ],
         id: str = 'dataengineering',
         num_records: int = 100,
     ):
@@ -247,7 +303,8 @@ class RedditETL(SocialETL):
             social_data=self.transform(
                 social_data=self.extract(
                     id=id, num_records=num_records, client=client
-                )
+                ),
+                transform_function=transform_function,
             ),
             db_cursor_context=db_cursor_context,
         )
@@ -309,6 +366,9 @@ class TwitterETL(SocialETL):
     def transform(
         self,
         social_data: List[SocialMediaData],
+        transform_function: Callable[
+            [List[SocialMediaData]], List[SocialMediaData]
+        ],
     ) -> List[SocialMediaData]:
         """Function to transform twitter data, by only keeping the
         posts with number of comments greater than 2 standard deviations
@@ -321,7 +381,7 @@ class TwitterETL(SocialETL):
             List[SocialMediaData]: Filtered list of twitter post data.
         """
         logging.info('Transforming twitter data.')
-        return social_data
+        return transform_function(social_data)
 
     @log_metadata
     def load(
@@ -361,6 +421,9 @@ class TwitterETL(SocialETL):
         self,
         db_cursor_context: DatabaseConnection,
         client,
+        transform_function: Callable[
+            [List[SocialMediaData]], List[SocialMediaData]
+        ],
         id: str = 'startdataeng',
         num_records: int = 100,
     ):
@@ -377,7 +440,8 @@ class TwitterETL(SocialETL):
             social_data=self.transform(
                 social_data=self.extract(
                     id=id, num_records=num_records, client=client
-                )
+                ),
+                transform_function=transform_function,
             ),
             db_cursor_context=db_cursor_context,
         )
@@ -407,3 +471,12 @@ class ETLFactory:
             raise ValueError(
                 f"source {source} is not supported. Please pass a valid source."
             )
+
+
+def transformation_factory(transformation: str) -> Callable:
+    factory = {
+        'sd': standard_deviation_outlier_filter,
+        'no_tx': no_transformation,
+        'rand': random_choice_filter,
+    }
+    return factory.get(transformation)
