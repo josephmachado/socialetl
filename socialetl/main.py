@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 from utils.db import DatabaseConnection
 
-from socialetl import ETLFactory
+from socialetl import ETLFactory, transformation_factory
 
 load_dotenv()
 
@@ -43,7 +43,7 @@ def teardown_db_schema():
         cur.execute('DROP TABLE IF EXISTS log_metadata')
 
 
-def main(source: str = 'reddit') -> None:
+def main(source: str, transformation: str) -> None:
     """Function to call the ETL code
 
     Args:
@@ -53,7 +53,9 @@ def main(source: str = 'reddit') -> None:
     logging.info(f'Getting {source} ETL object from factory')
     client, social_etl = ETLFactory().create_etl(source)
     social_etl.run(
-        db_cursor_context=DatabaseConnection().managed_cursor(), client=client
+        db_cursor_context=DatabaseConnection().managed_cursor(),
+        client=client,
+        transform_function=transformation_factory(transformation),
     )
     logging.info(f'Finished {source} ETL')
 
@@ -66,6 +68,13 @@ if __name__ == '__main__':
         default='reddit',
         type=str,
         help='Indicates which ETL to run.',
+    )
+    parser.add_argument(
+        '--tx',
+        choices=['sd', 'no_tx', 'rand'],
+        default='sd',
+        type=str,
+        help='Indicates which transformation algorithm to run.',
     )
     parser.add_argument(
         '-log',
@@ -84,4 +93,4 @@ if __name__ == '__main__':
     if args.reset_db:
         teardown_db_schema()
         setup_db_schema()
-    main(source=args.etl)
+    main(source=args.etl, transformation=args.tx)
