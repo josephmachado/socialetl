@@ -182,6 +182,15 @@ def standard_deviation_outlier_filter(
     ]
 
 
+def transformation_factory(transformation: str) -> Callable:
+    factory = {
+        'sd': standard_deviation_outlier_filter,
+        'no_tx': no_transformation,
+        'rand': random_choice_filter,
+    }
+    return factory.get(transformation)
+
+
 class RedditETL(SocialETL):
     @log_metadata
     def extract(
@@ -471,12 +480,3 @@ class ETLFactory:
             raise ValueError(
                 f"source {source} is not supported. Please pass a valid source."
             )
-
-
-def transformation_factory(transformation: str) -> Callable:
-    factory = {
-        'sd': standard_deviation_outlier_filter,
-        'no_tx': no_transformation,
-        'rand': random_choice_filter,
-    }
-    return factory.get(transformation)
