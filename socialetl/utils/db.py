@@ -59,6 +59,6 @@ class DatabaseConnection(metaclass=SingletonMeta):
 @atexit.register
 def close() -> None:
     """Function to close the database connection."""
-    logging.info('Closing Database connection')
     db = DatabaseConnection()
+    logging.info(f'Closing Database connection with file {db.db_file}')
     db.conn.close()
