@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 from utils.db import DatabaseConnection
 
-from socialetl import ETLFactory, transformation_factory
+from socialetl import etl_factory, transformation_factory
 
 load_dotenv()
 
@@ -37,9 +37,10 @@ def setup_db_schema():
 
 def teardown_db_schema():
     """Function to teardown the database schema."""
-    logging.info('Dropping social_posts table.')
     with DatabaseConnection().managed_cursor() as cur:
+        logging.info('Dropping social_posts table.')
         cur.execute('DROP TABLE IF EXISTS social_posts')
+        logging.info('Dropping log_metadata table.')
         cur.execute('DROP TABLE IF EXISTS log_metadata')
 
 
@@ -51,9 +52,10 @@ def main(source: str, transformation: str) -> None:
     """
     logging.info(f'Starting {source} ETL')
     logging.info(f'Getting {source} ETL object from factory')
-    client, social_etl = ETLFactory().create_etl(source)
+    client, social_etl = etl_factory(source)
+    db = DatabaseConnection()
     social_etl.run(
-        db_cursor_context=DatabaseConnection().managed_cursor(),
+        db_cursor_context=db.managed_cursor(),
         client=client,
         transform_function=transformation_factory(transformation),
     )
@@ -72,7 +74,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--tx',
         choices=['sd', 'no_tx', 'rand'],
-        default='sd',
+        default='no_tx',
         type=str,
         help='Indicates which transformation algorithm to run.',
     )
