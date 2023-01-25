@@ -83,14 +83,12 @@ class TestRedditETL:
         )
         # Call the load method on the RedditETL object
         # and pass in the transformed data
-        db_cursor_context = DatabaseConnection(
-            db_file="data/test.db"
-        ).managed_cursor()
-        reddit_etl.load(transformed_data, db_cursor_context=db_cursor_context)
+        db = DatabaseConnection(db_file="data/test.db")
+        reddit_etl.load(
+            transformed_data, db_cursor_context=db.managed_cursor()
+        )
         # Read social_posts table from database
-        with DatabaseConnection(
-            db_file="data/test.db"
-        ).managed_cursor() as cur:
+        with db.managed_cursor() as cur:
             cur.execute("SELECT * FROM social_posts WHERE source = 'reddit'")
             rows = cur.fetchall()
 

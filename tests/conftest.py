@@ -7,8 +7,9 @@ from socialetl.utils.db import DatabaseConnection
 
 @pytest.fixture(scope='session', autouse=True)
 def mock_social_posts_table() -> None:
+    db = DatabaseConnection(db_file="data/test.db")
     # Setup schema
-    with DatabaseConnection(db_file="data/test.db").managed_cursor() as cur:
+    with db.managed_cursor() as cur:
         # setup schema
         cur.execute(
             """
@@ -22,7 +23,7 @@ def mock_social_posts_table() -> None:
         )
     yield
     # teardown schema
-    with DatabaseConnection(db_file="data/test.db").managed_cursor() as cur:
+    with db.managed_cursor() as cur:
         # setup schema
         cur.execute(
             """

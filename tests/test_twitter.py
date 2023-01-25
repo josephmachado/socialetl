@@ -3,8 +3,12 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import (SocialMediaData, TwitterTweetData,
-                                 etl_factory, transformation_factory)
+from socialetl.socialetl import (
+    SocialMediaData,
+    TwitterTweetData,
+    etl_factory,
+    transformation_factory,
+)
 from socialetl.utils.db import DatabaseConnection
 
 

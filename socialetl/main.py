@@ -53,8 +53,9 @@ def main(source: str, transformation: str) -> None:
     logging.info(f'Starting {source} ETL')
     logging.info(f'Getting {source} ETL object from factory')
     client, social_etl = etl_factory(source)
+    db = DatabaseConnection()
     social_etl.run(
-        db_cursor_context=DatabaseConnection().managed_cursor(),
+        db_cursor_context=db.managed_cursor(),
         client=client,
         transform_function=transformation_factory(transformation),
     )
