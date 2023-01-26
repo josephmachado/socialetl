@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 from utils.db import DatabaseConnection
 
-from socialetl import etl_factory, transformation_factory
+from socialetl import etl_factory, transformation_factory  # type: ignore
 
 load_dotenv()
 
@@ -48,7 +48,8 @@ def main(source: str, transformation: str) -> None:
     """Function to call the ETL code
 
     Args:
-        source (str, optional): Defines which ata to pull. Defaults to 'reddit'.
+        source (str, optional): Defines which ata to pull.
+        Defaults to 'reddit'.
     """
     logging.info(f'Starting {source} ETL')
     logging.info(f'Getting {source} ETL object from factory')
@@ -82,7 +83,9 @@ if __name__ == '__main__':
         '-log',
         '--loglevel',
         default='warning',
-        help='Provide logging level. Example --loglevel debug, default=warning',
+        help=(
+            'Provide logging level. Example --loglevel debug, default=warning'
+        ),
     )
     parser.add_argument(
         '--reset-db',

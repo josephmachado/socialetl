@@ -2,6 +2,7 @@ import atexit
 import logging
 import sqlite3
 from contextlib import contextmanager
+from typing import Any, Dict, Iterator
 
 
 class SingletonMeta(type):
@@ -9,10 +10,11 @@ class SingletonMeta(type):
     The Singleton class can be implemented in different ways in Python. Some
     possible methods include: base class, decorator, metaclass. We will use the
     metaclass because it is best suited for this purpose.
-    Ref: https://refactoring.guru/design-patterns/singleton/python/example#example-0
+    Ref:
+    https://refactoring.guru/design-patterns/singleton/python/example#example-0
     """
 
-    _instances = {}
+    _instances: Dict[Any, Any] = {}
 
     def __call__(cls, *args, **kwargs):
         """
@@ -32,8 +34,10 @@ class DatabaseConnection(metaclass=SingletonMeta):
         """Class to connect to a database.
 
         Args:
-            db_type (str, optional): Database type. Defaults to 'sqlite3'.
-            db_file (str, optional): Database file. Defaults to 'data/socialetl.db'.
+            db_type (str, optional): Database type.
+                Defaults to 'sqlite3'.
+            db_file (str, optional): Database file.
+                Defaults to 'data/socialetl.db'.
         """
         self.db_type = db_type
         self.db_file = db_file
@@ -41,7 +45,7 @@ class DatabaseConnection(metaclass=SingletonMeta):
         self.conn = sqlite3.connect(self.db_file)
 
     @contextmanager
-    def managed_cursor(self) -> sqlite3.Cursor:
+    def managed_cursor(self) -> Iterator[sqlite3.Cursor]:
         """Function to create a managed database cursor.
 
         Yields:
@@ -59,6 +63,6 @@ class DatabaseConnection(metaclass=SingletonMeta):
 @atexit.register
 def close() -> None:
     """Function to close the database connection."""
-    logging.info('Closing Database connection')
     db = DatabaseConnection()
+    logging.info(f'Closing Database connection with file {db.db_file}')
     db.conn.close()

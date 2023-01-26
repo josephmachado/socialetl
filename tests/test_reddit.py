@@ -4,12 +4,8 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import (
-    RedditPostData,
-    SocialMediaData,
-    etl_factory,
-    transformation_factory,
-)
+from socialetl.socialetl import (RedditPostData, SocialMediaData, etl_factory,
+                                 transformation_factory)
 from socialetl.utils.db import DatabaseConnection
 
 
@@ -25,8 +21,6 @@ class TestRedditETL:
             List[SocialMediaData]: List of SocialMediaData objects that
             replicate what we get from the extract method.
         """
-        # Create 5 SocialMediaData objects with the same id, source, social_data
-        # where social_data is a RedditPostData object
         list_of_reddit_data = []
         for idx, elt in enumerate(
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8]
@@ -63,7 +57,7 @@ class TestRedditETL:
         )
         # Assert that the transformed data is a list of RedditPostData objects
         assert isinstance(transformed_data, list)
-        assert transformed_data[0].social_data.comms_num == 8
+        assert transformed_data[0].social_data.comms_num == 8  # type: ignore
         assert len(transformed_data) == 1
 
     def test_load(self, mock_reddit_data: List[SocialMediaData]) -> None:
@@ -92,9 +86,11 @@ class TestRedditETL:
             cur.execute("SELECT * FROM social_posts WHERE source = 'reddit'")
             rows = cur.fetchall()
 
-        # Assert that the length of the rows is the same as the length of the mock
+        # Assert that the length of the rows is the same as the
+        # length of the mock
         assert len(rows) == len(transformed_data)
-        # Assert that the text of the first element of the rows is the same as the text of the first element of the mock
+        # Assert that the text of the first element of the rows
+        # is the same as the text of the first element of the mock
         assert (
             json.loads(rows[0][2].replace("\'", "\"")).get('text')
             == transformed_data[0].social_data.text

@@ -3,12 +3,8 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import (
-    SocialMediaData,
-    TwitterTweetData,
-    etl_factory,
-    transformation_factory,
-)
+from socialetl.socialetl import (SocialMediaData, TwitterTweetData,
+                                 etl_factory, transformation_factory)
 from socialetl.utils.db import DatabaseConnection
 
 
@@ -24,8 +20,7 @@ class TestTwitterETL:
             List[SocialMediaData]: List of SocialMediaData objects that
             replicate what we get from the extract method.
         """
-        # Create 5 SocialMediaData objects with the same id, source, social_data
-        # where social_data is a TwitterTweetData object
+        # Create 5 SocialMediaData objects
         list_of_twitter_data = []
         for idx in range(5):
             list_of_twitter_data.append(
@@ -53,7 +48,8 @@ class TestTwitterETL:
         transformed_data = twitter_etl.transform(
             mock_twitter_data, transformation_factory('no_tx')
         )
-        # Assert that the transformed data is a list of TwitterTweetData objects
+        # Assert that the transformed data is a
+        # list of TwitterTweetData objects
         assert isinstance(transformed_data, list)
         assert isinstance(
             transformed_data[0],
@@ -67,9 +63,12 @@ class TestTwitterETL:
                 )
             ),
         )
-        # Assert that the length of the transformed data is the same as the length of the mock
+        # Assert that the length of the transformed data is
+        # the same as the length of the mock
         assert len(transformed_data) == len(mock_twitter_data)
-        # Assert that the text of the first element of the transformed data is the same as the text of the first element of the mock
+        # Assert that the text of the first element of the
+        # transformed data is the same as the text of the
+        # first element of the mock
         assert (
             transformed_data[0].social_data.text
             == mock_twitter_data[0].social_data.text
@@ -105,9 +104,11 @@ class TestTwitterETL:
         ).managed_cursor() as cur:
             cur.execute("SELECT * FROM social_posts WHERE source = 'twitter'")
             rows = cur.fetchall()
-        # Assert that the length of the rows is the same as the length of the mock
+        # Assert that the length of the rows is the same as the
+        # length of the mock
         assert len(rows) == len(mock_twitter_data)
-        # Assert that the text of the first element of the rows is the same as the text of the first element of the mock
+        # Assert that the text of the first element of the rows
+        # is the same as the text of the first element of the mock
         assert (
             json.loads(rows[0][2].replace("\'", "\"")).get('text')
             == mock_twitter_data[0].social_data.text

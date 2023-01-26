@@ -24,7 +24,8 @@ class RedditPostData:
         score (int): Score of the reddit post.
         url (str): URL of the reddit post.
         comms_num (int): Number of comments on the reddit post.
-        created (str): Datetime (string repr) of when the reddit post was created.
+        created (str): Datetime (string repr) of when the reddit
+             post was created.
     """
 
     title: str
@@ -108,14 +109,18 @@ def log_metadata(func):
         param_names = list(
             inspect.signature(func).parameters.keys()
         )  # order is preserved
-        # match with input_params.get('args') and then input_params.get('kwargs')
+        # match with input_params.get('args') and
+        # then input_params.get('kwargs')
         input_dict = {}
         for v in input_params.get('args'):
             input_dict[param_names.pop(0)] = v
 
         with DatabaseConnection().managed_cursor() as cur:
             cur.execute(
-                f'INSERT INTO log_metadata (function_name, input_params) VALUES (:func_name, :input_params)',
+                (
+                    'INSERT INTO log_metadata (function_name, input_params)'
+                    ' VALUES (:func_name, :input_params)'
+                ),
                 {
                     'func_name': func.__name__,
                     'input_params': str(
@@ -166,9 +171,19 @@ def standard_deviation_outlier_filter(
         List[SocialMediaData]: Filtered list of social media post data.
     """
     logging.info(
-        'Filtering social media data based on Standard Deviation Outlier algorithm.'
+        'Filtering social media data based on Standard Deviation Outlier'
+        ' algorithm.'
     )
-    num_comments = [post.social_data.comms_num for post in social_data]
+    # check if social data is an instance of RedditPostData
+    if not isinstance(social_data[0].social_data, RedditPostData):
+        raise TypeError(
+            'Social data for this standard_deviation_outlier_filter must be an'
+            ' instance of RedditPostData.'
+        )
+    num_comments = [
+        post.social_data.comms_num for post in social_data  # type: ignore
+    ]
+
     mean_num_comments = sum(num_comments) / len(num_comments)
     std_num_comments = (
         sum([(x - mean_num_comments) ** 2 for x in num_comments])
@@ -177,18 +192,25 @@ def standard_deviation_outlier_filter(
     return [
         post
         for post in social_data
-        if post.social_data.comms_num
+        if post.social_data.comms_num  # type: ignore
         > mean_num_comments + 2 * std_num_comments
     ]
 
 
-def transformation_factory(transformation: str) -> Callable:
+def transformation_factory(
+    transformation: str,
+) -> Callable[[List[SocialMediaData]], List[SocialMediaData]]:
+    """Factory function to return the transformation function."""
     factory = {
         'sd': standard_deviation_outlier_filter,
         'no_tx': no_transformation,
         'rand': random_choice_filter,
     }
-    return factory.get(transformation)
+    if transformation not in factory:
+        raise ValueError(
+            f'Invalid transformation. Please choose from {factory.keys()}'
+        )
+    return factory[transformation]
 
 
 class RedditETL(SocialETL):
@@ -211,7 +233,8 @@ class RedditETL(SocialETL):
         logging.info('Extracting reddit data.')
         if client is None:
             raise ValueError(
-                'reddit object is None. Please pass a valid praw.Reddit object.'
+                'reddit object is None. Please pass a valid praw.Reddit'
+                ' object.'
             )
 
         subreddit = client.subreddit(id)
@@ -269,7 +292,8 @@ class RedditETL(SocialETL):
         logging.info('Loading reddit data.')
         if db_cursor_context is None:
             raise ValueError(
-                'db_cursor is None. Please pass a valid DatabaseConnection object.'
+                'db_cursor is None. Please pass a valid DatabaseConnection'
+                ' object.'
             )
 
         with db_cursor_context as cur:
@@ -331,7 +355,8 @@ class TwitterETL(SocialETL):
         # if twitter client is None, raise an error
         if client is None:
             raise ValueError(
-                "twitter object is None. Please pass a valid tweepy.Tweet object."
+                "twitter object is None. Please pass a valid tweepy.Tweet"
+                " object."
             )
 
         # given user name, get user id with tweepy
@@ -406,7 +431,8 @@ class TwitterETL(SocialETL):
         logging.info('Loading twitter data.')
         if db_cursor_context is None:
             raise ValueError(
-                'db_cursor is None. Please pass a valid DatabaseConnection object.'
+                'db_cursor is None. Please pass a valid DatabaseConnection'
+                ' object.'
             )
 
         with db_cursor_context as cur:
