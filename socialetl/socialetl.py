@@ -5,6 +5,7 @@ import random
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import Callable, List, Tuple
 
 import praw
@@ -197,20 +198,23 @@ def standard_deviation_outlier_filter(
     ]
 
 
-def transformation_factory(
-    transformation: str,
-) -> Callable[[List[SocialMediaData]], List[SocialMediaData]]:
-    """Factory function to return the transformation function."""
-    factory = {
-        'sd': standard_deviation_outlier_filter,
-        'no_tx': no_transformation,
-        'rand': random_choice_filter,
-    }
-    if transformation not in factory:
-        raise ValueError(
-            f'Invalid transformation. Please choose from {factory.keys()}'
-        )
-    return factory[transformation]
+class TransformationType(Enum):
+    """Enum to hold the different transformation types."""
+
+    STANDARD_DEVIATION_OUTLIER = 'sd'
+    NO_TRANSFORMATION = 'no_tx'
+    RANDOM_CHOICE = 'rand'
+
+    def transformation_factory(
+        self,
+    ) -> Callable[[List[SocialMediaData]], List[SocialMediaData]]:
+        """Factory function to return the transformation function."""
+        factory = {
+            'sd': standard_deviation_outlier_filter,
+            'no_tx': no_transformation,
+            'rand': random_choice_filter,
+        }
+        return factory[self.value]
 
 
 class RedditETL(SocialETL):

@@ -3,8 +3,8 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import (SocialMediaData, TwitterTweetData,
-                                 etl_factory, transformation_factory)
+from socialetl.socialetl import (SocialMediaData, TransformationType,
+                                 TwitterTweetData, etl_factory)
 from socialetl.utils.db import DatabaseConnection
 
 
@@ -46,7 +46,8 @@ class TestTwitterETL:
         # Call the transform method on the TwitterETL object
         # and pass in the mock
         transformed_data = twitter_etl.transform(
-            mock_twitter_data, transformation_factory('no_tx')
+            mock_twitter_data,
+            TransformationType('no_tx').transformation_factory(),
         )
         # Assert that the transformed data is a
         # list of TwitterTweetData objects
@@ -87,7 +88,8 @@ class TestTwitterETL:
         # Call the transform method on the TwitterETL object
         # and pass in the mock
         transformed_data = twitter_etl.transform(
-            mock_twitter_data, transformation_factory('no_tx')
+            mock_twitter_data,
+            TransformationType('no_tx').transformation_factory(),
         )
         # Create a DatabaseConnection with db_type as :memory:
 
