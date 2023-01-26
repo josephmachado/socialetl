@@ -39,10 +39,10 @@ class DatabaseConnection(metaclass=SingletonMeta):
             db_file (str, optional): Database file.
                 Defaults to 'data/socialetl.db'.
         """
-        self.db_type = db_type
-        self.db_file = db_file
-        logging.info(f'Opening connection to {self.db_file}')
-        self.conn = sqlite3.connect(self.db_file)
+        self._db_type = db_type
+        self._db_file = db_file
+        logging.info(f'Opening connection to {str(self)}')
+        self._conn = sqlite3.connect(self._db_file)
 
     @contextmanager
     def managed_cursor(self) -> Iterator[sqlite3.Cursor]:
@@ -51,18 +51,25 @@ class DatabaseConnection(metaclass=SingletonMeta):
         Yields:
             sqlite3.Cursor: A sqlite3 cursor.
         """
-        if self.db_type == 'sqlite3':
-            cur = self.conn.cursor()
+        if self._db_type == 'sqlite3':
+            cur = self._conn.cursor()
             try:
                 yield cur
             finally:
-                self.conn.commit()
+                self._conn.commit()
                 cur.close()
+
+    def close(self) -> None:
+        """Function to close the database connection."""
+        self._conn.close()
+
+    def __str__(self) -> str:
+        return f'{self._db_type}://{self._db_file}'
 
 
 @atexit.register
 def close() -> None:
     """Function to close the database connection."""
     db = DatabaseConnection()
-    logging.info(f'Closing Database connection with file {db.db_file}')
-    db.conn.close()
+    logging.info(f'Closing Database connection to {str(db)}')
+    db.close()
