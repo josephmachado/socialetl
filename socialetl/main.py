@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 from utils.db import DatabaseConnection
 
-from socialetl import etl_factory, transformation_factory  # type: ignore
+from socialetl import TransformationType, etl_factory  # type: ignore
 
 load_dotenv()
 
@@ -58,7 +58,9 @@ def main(source: str, transformation: str) -> None:
     social_etl.run(
         db_cursor_context=db.managed_cursor(),
         client=client,
-        transform_function=transformation_factory(transformation),
+        transform_function=TransformationType(
+            transformation
+        ).transformation_factory(),
     )
     logging.info(f'Finished {source} ETL')
 
@@ -74,7 +76,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--tx',
-        choices=['sd', 'no_tx', 'rand'],
+        choices=[t.value for t in list(TransformationType)],
         default='no_tx',
         type=str,
         help='Indicates which transformation algorithm to run.',

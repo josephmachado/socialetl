@@ -4,8 +4,8 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import (RedditPostData, SocialMediaData, etl_factory,
-                                 transformation_factory)
+from socialetl.socialetl import (RedditPostData, SocialMediaData,
+                                 TransformationType, etl_factory)
 from socialetl.utils.db import DatabaseConnection
 
 
@@ -53,7 +53,7 @@ class TestRedditETL:
         # Call the transform method on the RedditETL object
         # and pass in the mock
         transformed_data = reddit_etl.transform(
-            mock_reddit_data, transformation_factory('sd')
+            mock_reddit_data, TransformationType('sd').transformation_factory()
         )
         # Assert that the transformed data is a list of RedditPostData objects
         assert isinstance(transformed_data, list)
@@ -73,7 +73,8 @@ class TestRedditETL:
         # Call the transform method on the RedditETL object
         # and pass in the mock
         transformed_data = reddit_etl.transform(
-            mock_reddit_data, transformation_factory('no_tx')
+            mock_reddit_data,
+            TransformationType('no_tx').transformation_factory(),
         )
         # Call the load method on the RedditETL object
         # and pass in the transformed data
