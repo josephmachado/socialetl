@@ -13,3 +13,9 @@ lint:
 	flake8 ./tests
 
 ci: format type lint pytest
+
+reddit-etl:
+	python ./socialetl/main.py --etl reddit --tx sd --log info
+
+twitter-etl:
+	python ./socialetl/main.py --etl reddit --log info
