@@ -1,4 +1,3 @@
-import atexit
 import logging
 import sqlite3
 from contextlib import contextmanager

@@ -4,12 +4,8 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import (
-    RedditPostData,
-    SocialMediaData,
-    TransformationType,
-    etl_factory,
-)
+from socialetl.socialetl import (RedditPostData, SocialMediaData,
+                                 TransformationType, etl_factory)
 from socialetl.utils.db import DatabaseConnection, db_factory
 
 

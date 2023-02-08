@@ -11,7 +11,7 @@ from typing import Callable, List, Tuple
 import praw
 import tweepy
 from dotenv import load_dotenv
-from utils.db import db_factory, DatabaseConnection
+from utils.db import DatabaseConnection, db_factory
 
 load_dotenv()
 
