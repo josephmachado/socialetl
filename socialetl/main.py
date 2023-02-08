@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from dotenv import load_dotenv
-from utils.db import DatabaseConnection
+from utils.db import db_factory
 
 from socialetl import TransformationType, etl_factory  # type: ignore
 
@@ -11,7 +11,8 @@ load_dotenv()
 
 def setup_db_schema():
     """Function to setup the database schema."""
-    with DatabaseConnection().managed_cursor() as cur:
+    db = db_factory()
+    with db.managed_cursor() as cur:
         logging.info('Creating social_posts table.')
         cur.execute(
             """
@@ -37,7 +38,8 @@ def setup_db_schema():
 
 def teardown_db_schema():
     """Function to teardown the database schema."""
-    with DatabaseConnection().managed_cursor() as cur:
+    db = db_factory()
+    with db.managed_cursor() as cur:
         logging.info('Dropping social_posts table.')
         cur.execute('DROP TABLE IF EXISTS social_posts')
         logging.info('Dropping log_metadata table.')
@@ -54,7 +56,7 @@ def main(source: str, transformation: str) -> None:
     logging.info(f'Starting {source} ETL')
     logging.info(f'Getting {source} ETL object from factory')
     client, social_etl = etl_factory(source)
-    db = DatabaseConnection()
+    db = db_factory()
     social_etl.run(
         db_cursor_context=db.managed_cursor(),
         client=client,

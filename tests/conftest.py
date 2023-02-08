@@ -22,6 +22,15 @@ def mock_social_posts_table() -> Generator:
             )
             """
         )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS log_metadata (
+                dt_created datetime default current_timestamp,
+                function_name TEXT,
+                input_params TEXT
+            )
+            """
+        )
     yield
     # teardown schema
     with db.managed_cursor() as cur:
@@ -29,6 +38,11 @@ def mock_social_posts_table() -> Generator:
         cur.execute(
             """
             DROP TABLE IF EXISTS social_posts
+            """
+        )
+        cur.execute(
+            """
+            DROP TABLE IF EXISTS log_metadata
             """
         )
     os.remove("data/test.db")

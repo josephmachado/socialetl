@@ -11,7 +11,7 @@ from typing import Callable, List, Tuple
 import praw
 import tweepy
 from dotenv import load_dotenv
-from utils.db import DatabaseConnection
+from utils.db import db_factory, DatabaseConnection
 
 load_dotenv()
 
@@ -116,7 +116,9 @@ def log_metadata(func):
         for v in input_params.get('args'):
             input_dict[param_names.pop(0)] = v
 
-        with DatabaseConnection().managed_cursor() as cur:
+        db = db_factory()
+        logging.info(f'LOGGING AT: {db}')
+        with db.managed_cursor() as cur:
             cur.execute(
                 (
                     'INSERT INTO log_metadata (function_name, input_params)'

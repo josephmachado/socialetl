@@ -4,9 +4,13 @@ from typing import List
 
 import pytest
 
-from socialetl.socialetl import (RedditPostData, SocialMediaData,
-                                 TransformationType, etl_factory)
-from socialetl.utils.db import DatabaseConnection
+from socialetl.socialetl import (
+    RedditPostData,
+    SocialMediaData,
+    TransformationType,
+    etl_factory,
+)
+from socialetl.utils.db import DatabaseConnection, db_factory
 
 
 class TestRedditETL:
@@ -41,13 +45,19 @@ class TestRedditETL:
             )
         return list_of_reddit_data
 
-    def test_transform(self, mock_reddit_data: List[SocialMediaData]) -> None:
+    def test_transform(
+        self, mock_reddit_data: List[SocialMediaData], mocker
+    ) -> None:
         """Function to test the transform method of the RedditETL class.
 
         Args:
             mock_reddit_data (List[SocialMediaData]): List of SocialMediaData
             objects that replicate what we get from the extract method.
         """
+        mocker.patch(
+            "socialetl.socialetl.db_factory",
+            return_value=DatabaseConnection(db_file="data/test.db"),
+        )
         # Create a RedditETL object
         _, reddit_etl = etl_factory('reddit')
         # Call the transform method on the RedditETL object
@@ -60,13 +70,19 @@ class TestRedditETL:
         assert transformed_data[0].social_data.comms_num == 8  # type: ignore
         assert len(transformed_data) == 1
 
-    def test_load(self, mock_reddit_data: List[SocialMediaData]) -> None:
+    def test_load(
+        self, mock_reddit_data: List[SocialMediaData], mocker
+    ) -> None:
         """Function to test the load method of the RedditETL class.
 
         Args:
             mock_reddit_data (List[SocialMediaData]): List of SocialMediaData
             objects that replicate what we get from the extract method.
         """
+        mocker.patch(
+            "socialetl.socialetl.db_factory",
+            return_value=DatabaseConnection(db_file="data/test.db"),
+        )
         # Create a RedditETL object
         # Create a RedditETL object
         _, reddit_etl = etl_factory('reddit')
@@ -78,7 +94,8 @@ class TestRedditETL:
         )
         # Call the load method on the RedditETL object
         # and pass in the transformed data
-        db = DatabaseConnection(db_file="data/test.db")
+        db = db_factory(db_file="data/test.db")
+        # logging.info(f'TEST: {db}')
         reddit_etl.load(
             transformed_data, db_cursor_context=db.managed_cursor()
         )
