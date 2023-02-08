@@ -1,4 +1,3 @@
-import logging
 import sqlite3
 from contextlib import contextmanager
 from typing import Iterator
@@ -27,7 +26,6 @@ class DatabaseConnection:
             sqlite3.Cursor: A sqlite3 cursor.
         """
         if self._db_type == 'sqlite3':
-            logging.info(f'Opening connection to {str(self)}')
             _conn = sqlite3.connect(self._db_file)
             cur = _conn.cursor()
             try:
@@ -35,7 +33,6 @@ class DatabaseConnection:
             finally:
                 _conn.commit()
                 cur.close()
-                logging.info(f'Closing connection to {str(self)}')
                 _conn.close()
 
     def __str__(self) -> str:

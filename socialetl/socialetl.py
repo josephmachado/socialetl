@@ -117,7 +117,6 @@ def log_metadata(func):
             input_dict[param_names.pop(0)] = v
 
         db = db_factory()
-        logging.info(f'LOGGING AT: {db}')
         with db.managed_cursor() as cur:
             cur.execute(
                 (
