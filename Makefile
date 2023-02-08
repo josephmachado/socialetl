@@ -19,3 +19,6 @@ reddit-etl:
 
 twitter-etl:
 	python ./socialetl/main.py --etl twitter --log info
+
+database:
+	sqlite3 ./data/socialetl.db
