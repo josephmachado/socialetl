@@ -38,6 +38,7 @@ python3 -m venv venv # Create a venv
 . venv/bin/activate # activate venv
 pip install -r requirements.txt # install requirements
 make ci # Run tests, check linting, & format code
+make reset-db # Creates DB schemas
 make reddit-etl # ETL reddit data
 make twitter-elt # ETL twitter data
 make db # open the db to check ELT-ed data 
