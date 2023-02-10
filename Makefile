@@ -20,5 +20,8 @@ reddit-etl:
 twitter-etl:
 	python ./socialetl/main.py --etl twitter --log info
 
-database:
+db:
 	sqlite3 ./data/socialetl.db
+
+reset-db:
+	python ./socialetl/schema_manager.py --reset-db
