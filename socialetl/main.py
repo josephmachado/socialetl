@@ -2,10 +2,9 @@ import argparse
 import logging
 
 from dotenv import load_dotenv
+from social_etl import etl_factory  # type: ignore
 from transform import transformation_factory
 from utils.db import db_factory
-
-from socialetl import etl_factory  # type: ignore
 
 load_dotenv()
 
@@ -24,9 +23,7 @@ def main(source: str, transformation: str) -> None:
     social_etl.run(
         db_cursor_context=db.managed_cursor(),
         client=client,
-        transform_function=transformation_factory(
-            transformation
-        ).transformation_factory(),
+        transform_function=transformation_factory(transformation),
     )
     logging.info(f'Finished {source} ETL')
 
