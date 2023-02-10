@@ -2,7 +2,7 @@ import logging
 import random
 from typing import Callable, List
 
-from socialetl.social_etl import RedditPostData, SocialMediaData
+from social_etl import RedditPostData, SocialMediaData
 
 
 def no_transformation(

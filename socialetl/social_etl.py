@@ -1,4 +1,3 @@
-import inspect
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -9,7 +8,8 @@ from typing import Callable, List, Tuple
 import praw
 import tweepy
 from dotenv import load_dotenv
-from utils.db import DatabaseConnection, db_factory
+from metadata import log_metadata
+from utils.db import DatabaseConnection
 
 load_dotenv()
 
@@ -97,40 +97,6 @@ class SocialETL(ABC):
         num_records: int,
     ):
         pass
-
-
-def log_metadata(func):
-    def log_wrapper(*args, **kwargs):
-
-        input_params = dict(
-            zip(list(locals().keys())[:-1], list(locals().values())[:-1])
-        )
-        param_names = list(
-            inspect.signature(func).parameters.keys()
-        )  # order is preserved
-        # match with input_params.get('args') and
-        # then input_params.get('kwargs')
-        input_dict = {}
-        for v in input_params.get('args'):
-            input_dict[param_names.pop(0)] = v
-
-        db = db_factory()
-        with db.managed_cursor() as cur:
-            cur.execute(
-                (
-                    'INSERT INTO log_metadata (function_name, input_params)'
-                    ' VALUES (:func_name, :input_params)'
-                ),
-                {
-                    'func_name': func.__name__,
-                    'input_params': str(
-                        input_dict | input_params.get('kwargs')
-                    ),
-                },
-            )
-        return func(*args, **kwargs)
-
-    return log_wrapper
 
 
 class RedditETL(SocialETL):

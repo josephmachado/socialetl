@@ -3,10 +3,9 @@ from datetime import datetime
 from typing import List
 
 import pytest
-
-from socialetl.social_etl import RedditPostData, SocialMediaData, etl_factory
-from socialetl.transform import transformation_factory
-from socialetl.utils.db import DatabaseConnection, db_factory
+from social_etl import RedditPostData, SocialMediaData, etl_factory
+from transform import transformation_factory
+from utils.db import DatabaseConnection, db_factory
 
 
 class TestRedditETL:
@@ -51,7 +50,7 @@ class TestRedditETL:
             objects that replicate what we get from the extract method.
         """
         mocker.patch(
-            "socialetl.social_etl.db_factory",
+            "socialetl.metadata.db_factory",
             return_value=DatabaseConnection(db_file="data/test.db"),
         )
         # Create a RedditETL object
@@ -77,7 +76,7 @@ class TestRedditETL:
             objects that replicate what we get from the extract method.
         """
         mocker.patch(
-            "socialetl.social_etl.db_factory",
+            "socialetl.metadata.db_factory",
             return_value=DatabaseConnection(db_file="data/test.db"),
         )
         # Create a RedditETL object

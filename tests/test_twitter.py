@@ -2,10 +2,9 @@ import json
 from typing import List
 
 import pytest
-
-from socialetl.social_etl import SocialMediaData, TwitterTweetData, etl_factory
-from socialetl.transform import transformation_factory
-from socialetl.utils.db import DatabaseConnection
+from social_etl import SocialMediaData, TwitterTweetData, etl_factory
+from transform import transformation_factory
+from utils.db import DatabaseConnection
 
 
 class TestTwitterETL:
@@ -44,7 +43,7 @@ class TestTwitterETL:
             objects that replicate what we get from the extract method.
         """
         mocker.patch(
-            "socialetl.social_etl.db_factory",
+            "socialetl.metadata.db_factory",
             return_value=DatabaseConnection(db_file="data/test.db"),
         )
         # Create a TwitterETL object
@@ -90,7 +89,7 @@ class TestTwitterETL:
             objects that replicate what we get from the extract method.
         """
         mocker.patch(
-            "socialetl.social_etl.db_factory",
+            "socialetl.metadata.db_factory",
             return_value=DatabaseConnection(db_file="data/test.db"),
         )
         # Create a TwitterETL object
