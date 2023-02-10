@@ -13,6 +13,10 @@ def mock_social_posts_table(session_mocker) -> Generator:
         "socialetl.schema_manager.db_factory",
         return_value=DatabaseConnection(db_file="data/test.db"),
     )
+    session_mocker.patch(
+        "socialetl.metadata.db_factory",
+        return_value=DatabaseConnection(db_file="data/test.db"),
+    )
     setup_db_schema()
     yield
     teardown_db_schema()
