@@ -2,48 +2,12 @@ import argparse
 import logging
 
 from dotenv import load_dotenv
+from transform import transformation_factory
 from utils.db import db_factory
 
-from socialetl import TransformationType, etl_factory  # type: ignore
+from socialetl import etl_factory  # type: ignore
 
 load_dotenv()
-
-
-def setup_db_schema():
-    """Function to setup the database schema."""
-    db = db_factory()
-    with db.managed_cursor() as cur:
-        logging.info('Creating social_posts table.')
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS social_posts (
-                id TEXT PRIMARY KEY,
-                source TEXT,
-                social_data TEXT,
-                dt_created datetime default current_timestamp
-            )
-            """
-        )
-        logging.info('Creating ETL metadata table.')
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS log_metadata (
-                dt_created datetime default current_timestamp,
-                function_name TEXT,
-                input_params TEXT
-            )
-            """
-        )
-
-
-def teardown_db_schema():
-    """Function to teardown the database schema."""
-    db = db_factory()
-    with db.managed_cursor() as cur:
-        logging.info('Dropping social_posts table.')
-        cur.execute('DROP TABLE IF EXISTS social_posts')
-        logging.info('Dropping log_metadata table.')
-        cur.execute('DROP TABLE IF EXISTS log_metadata')
 
 
 def main(source: str, transformation: str) -> None:
@@ -60,7 +24,7 @@ def main(source: str, transformation: str) -> None:
     social_etl.run(
         db_cursor_context=db.managed_cursor(),
         client=client,
-        transform_function=TransformationType(
+        transform_function=transformation_factory(
             transformation
         ).transformation_factory(),
     )
@@ -78,7 +42,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--tx',
-        choices=[t.value for t in list(TransformationType)],
+        choices=['sd', 'no_tx', 'rand'],
         default='no_tx',
         type=str,
         help='Indicates which transformation algorithm to run.',
@@ -91,15 +55,7 @@ if __name__ == '__main__':
             'Provide logging level. Example --loglevel debug, default=warning'
         ),
     )
-    parser.add_argument(
-        '--reset-db',
-        action='store_true',
-        help='Reset your database objects',
-    )
 
     args = parser.parse_args()
     logging.basicConfig(level=args.loglevel.upper())
-    if args.reset_db:
-        teardown_db_schema()
-        setup_db_schema()
     main(source=args.etl, transformation=args.tx)
