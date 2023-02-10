@@ -23,21 +23,30 @@ cd socialetl
 
 ## Setup
 
-The following commands are to be run via the terminal, inside your project root directory.
+Create a `.env` in the project's root directory, with the following content
+```txt
+REDDIT_CLIENT_ID=replace-with-your-reddit-client-id
+REDDIT_CLIENT_SECRET=replace-with-your-reddit-client-secret
+REDDIT_USER_AGENT=replace-with-your-reddit-user-agent
+BEARER_TOKEN=replace-with-your-twitter-bearer-token
+```
 
-1. Create a venv `python3 -m venv venv`
-2. Activate venv with `. venv/bin/activate`
-3. Install requirements `pip install -r requirements.txt`
-4. Create a file named `.env` in the projects root directory, with the following content
-   ```txt
-    REDDIT_CLIENT_ID=replace-with-your-reddit-client-id
-    REDDIT_CLIENT_SECRET=replace-with-your-reddit-client-secret
-    REDDIT_USER_AGENT=replace-with-your-reddit-user-agent
-    BEARER_TOKEN=replace-with-your-twitter-bearer-token
-    ```
-5. Run elt using the `make reddit-etl` and `make twitter-etl` commands on your terminal
-6. Run tests, check linting, etc using the command `make ci`
-7. Deactive venv with `deactivate` command
+Run the following commands are to be run via the terminal, from your project root directory.
+
+```bash
+python3 -m venv venv # Create a venv
+. venv/bin/activate # activate venv
+pip install -r requirements.txt # install requirements
+make ci # Run tests, check linting, & format code
+make reddit-etl # ETL reddit data
+make twitter-elt # ETL twitter data
+make db # open the db to check ELT-ed data 
+```
+
+```sqlite
+select source, count(*) from social_posts group by 1;
+.exit
+```
 
 ## Make commands
 
