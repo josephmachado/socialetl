@@ -5,7 +5,7 @@ from typing import List
 import pytest
 from social_etl import RedditPostData, SocialMediaData, etl_factory
 from transform import transformation_factory
-from utils.db import DatabaseConnection, db_factory
+from utils.db import db_factory
 
 
 class TestRedditETL:
@@ -49,10 +49,6 @@ class TestRedditETL:
             mock_reddit_data (List[SocialMediaData]): List of SocialMediaData
             objects that replicate what we get from the extract method.
         """
-        mocker.patch(
-            "metadata.db_factory",
-            return_value=DatabaseConnection(db_file="data/test.db"),
-        )
         # Create a RedditETL object
         _, reddit_etl = etl_factory('reddit')
         # Call the transform method on the RedditETL object
@@ -75,10 +71,6 @@ class TestRedditETL:
             mock_reddit_data (List[SocialMediaData]): List of SocialMediaData
             objects that replicate what we get from the extract method.
         """
-        mocker.patch(
-            "metadata.db_factory",
-            return_value=DatabaseConnection(db_file="data/test.db"),
-        )
         # Create a RedditETL object
         _, reddit_etl = etl_factory('reddit')
         # Call the transform method on the RedditETL object

@@ -2,17 +2,12 @@ import json
 import logging
 
 from metadata import log_metadata
-from utils.db import DatabaseConnection, db_factory
+from utils.db import db_factory
 
 
 class TestMetadata:
     def test_log_metadata(self, mocker):
         logging.info("Testing log_metadata decorator")
-
-        mocker.patch(
-            "metadata.db_factory",
-            return_value=DatabaseConnection(db_file="data/test.db"),
-        )
 
         @log_metadata
         def test_function(a, b, c, d=None):

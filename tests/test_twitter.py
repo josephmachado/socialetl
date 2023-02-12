@@ -42,10 +42,6 @@ class TestTwitterETL:
             mock_twitter_data (List[SocialMediaData]): List of SocialMediaData
             objects that replicate what we get from the extract method.
         """
-        mocker.patch(
-            "metadata.db_factory",
-            return_value=DatabaseConnection(db_file="data/test.db"),
-        )
         # Create a TwitterETL object
         _, twitter_etl = etl_factory('twitter')
         # Call the transform method on the TwitterETL object
@@ -88,10 +84,6 @@ class TestTwitterETL:
             mock_twitter_data (List[SocialMediaData]): List of SocialMediaData
             objects that replicate what we get from the extract method.
         """
-        mocker.patch(
-            "metadata.db_factory",
-            return_value=DatabaseConnection(db_file="data/test.db"),
-        )
         # Create a TwitterETL object
         _, twitter_etl = etl_factory('twitter')
         # Call the transform method on the TwitterETL object
