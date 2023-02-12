@@ -50,7 +50,7 @@ class TestRedditETL:
             objects that replicate what we get from the extract method.
         """
         mocker.patch(
-            "socialetl.metadata.db_factory",
+            "metadata.db_factory",
             return_value=DatabaseConnection(db_file="data/test.db"),
         )
         # Create a RedditETL object
@@ -76,7 +76,7 @@ class TestRedditETL:
             objects that replicate what we get from the extract method.
         """
         mocker.patch(
-            "socialetl.metadata.db_factory",
+            "metadata.db_factory",
             return_value=DatabaseConnection(db_file="data/test.db"),
         )
         # Create a RedditETL object
