@@ -1,12 +1,9 @@
 import argparse
 import logging
 
-from dotenv import load_dotenv
 from social_etl import etl_factory  # type: ignore
 from transform import transformation_factory
 from utils.db import db_factory
-
-load_dotenv()
 
 
 def main(source: str, transformation: str) -> None:
