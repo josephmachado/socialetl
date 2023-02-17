@@ -16,7 +16,7 @@ class TestMetadata:
         test_function(1, 2, 3, d=4)
 
         # check if test_function is logged in the database
-        db = db_factory(db_file="file::memory:?cache=shared")
+        db = db_factory(db_file="data/test.db")
         with db.managed_cursor() as cur:
             cur.execute(
                 "SELECT input_params FROM log_metadata WHERE function_name ="

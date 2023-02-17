@@ -1,3 +1,4 @@
+import os
 from typing import Generator
 
 import pytest
@@ -10,13 +11,13 @@ from socialetl.utils.db import DatabaseConnection
 def mock_social_posts_table(session_mocker) -> Generator:
     session_mocker.patch(
         "socialetl.schema_manager.db_factory",
-        return_value=DatabaseConnection(db_file="file::memory:?cache=shared"),
+        return_value=DatabaseConnection(db_file="data/test.db"),
     )
     session_mocker.patch(
         "metadata.db_factory",
-        return_value=DatabaseConnection(db_file="file::memory:?cache=shared"),
+        return_value=DatabaseConnection(db_file="data/test.db"),
     )
     setup_db_schema()
     yield
     teardown_db_schema()
-    # os.remove("data/test.db")
+    os.remove("data/test.db")

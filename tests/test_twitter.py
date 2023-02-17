@@ -88,7 +88,7 @@ class TestTwitterETL:
             mock_twitter_data, transformation_factory('no_tx')
         )
         db_cursor_context = DatabaseConnection(
-            db_file="file::memory:?cache=shared"
+            db_file="data/test.db"
         ).managed_cursor()
         twitter_etl.load(
             social_data=transformed_data,
@@ -96,7 +96,7 @@ class TestTwitterETL:
         )
         # Read social_posts table from database
         with DatabaseConnection(
-            db_file="file::memory:?cache=shared"
+            db_file="data/test.db"
         ).managed_cursor() as cur:
             cur.execute("SELECT * FROM social_posts WHERE source = 'twitter'")
             rows = cur.fetchall()
