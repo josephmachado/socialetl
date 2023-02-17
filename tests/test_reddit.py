@@ -77,7 +77,7 @@ class TestRedditETL:
         )
         # Call the load method on the RedditETL object
         # and pass in the transformed data
-        db = db_factory(db_file="data/test.db")
+        db = db_factory(db_file="file::memory:?cache=shared")
         reddit_etl.load(
             transformed_data, db_cursor_context=db.managed_cursor()
         )
