@@ -49,6 +49,16 @@ select source, count(*) from social_posts group by 1;
 .exit
 ```
 
+Set up git hooks. Create a pre-commit file, as shown below.
+
+```bash
+echo -e '
+#!/bin/sh
+make ci
+' > .git/hooks/pre-commit
+chmod ug+x .git/hooks/*
+```
+
 ## Make commands
 
 We have some make commands to make things run better, please refer to the [Makefile](./Makefile) to see them.

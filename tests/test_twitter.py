@@ -33,9 +33,7 @@ class TestTwitterETL:
             )
         return list_of_twitter_data
 
-    def test_transform(
-        self, mock_twitter_data: List[SocialMediaData], mocker
-    ) -> None:
+    def test_transform(self, mock_twitter_data: List[SocialMediaData]) -> None:
         """Function to test the transform method of the TwitterETL class.
 
         Args:
@@ -75,9 +73,7 @@ class TestTwitterETL:
             == mock_twitter_data[0].social_data.text
         )
 
-    def test_load(
-        self, mock_twitter_data: List[SocialMediaData], mocker
-    ) -> None:
+    def test_load(self, mock_twitter_data: List[SocialMediaData]) -> None:
         """Function to test the load method of the TwitterETL class.
 
         Args:
